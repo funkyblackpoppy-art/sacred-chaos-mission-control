@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ground Control // Sacred Chaos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bb: 'Bebas Neue', sans-serif;
+    --lb: 'Libre Baskerville', serif;
+    --mono: 'DM Mono', monospace;
+
+    --bg:       #0b0b0e;
+    --bg2:      #111116;
+    --bg3:      #17171f;
+    --bg4:      #1e1e28;
+
+    --rose:     #c0516a;
+    --rose-hi:  #e8447a;
+    --rose-dim: #7a2f42;
+    --rose-bg:  rgba(192,81,106,0.08);
+
+    --purple:   #9b7fe8;
+    --pur-dim:  #5b3fa6;
+    --pur-bg:   rgba(155,127,232,0.08);
+
+    --silver:   #9aa0b4;
+    --silver-d: #555c70;
+    --gold:     #c9a84c;
+
+    --text:     #e4dfd6;
+    --text2:    #8a8498;
+    --text3:    #4a4760;
+
+    --border:   rgba(154,160,180,0.10);
+    --border2:  rgba(154,160,180,0.18);
+
+    --green:    #4ade80;
+    --amber:    #fbbf24;
+    --red:      #f87171;
+    --blue:     #60a5fa;
+
+    --tier-core:  #c0516a;
+    --tier-rev:   #c9a84c;
+    --tier-grow:  #9b7fe8;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--lb);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRAIN OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── SCANLINES ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ── LAYOUT ── */
+  .app { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 20px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo-line {
+    font-family: var(--bb);
+    font-size: clamp(28px, 5vw, 48px);
+    letter-spacing: 4px;
+    line-height: 1;
+    color: var(--text);
+  }
+  .logo-line em { color: var(--rose); font-style: normal; }
+  .logo-line .slash { color: var(--text3); margin: 0 6px; }
+
+  .logo-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text3);
+    margin-top: 6px;
+    text-transform: uppercase;
+  }
+
+  .header-right { text-align: right; }
+  .clock {
+    font-family: var(--mono);
+    font-size: 26px;
+    letter-spacing: 3px;
+    color: var(--silver);
+    font-weight: 300;
+  }
+  .dateline {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── STATUS BAR ── */
+  .statusbar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .sb-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .sb-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .sb-dot.live    { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .sb-dot.staging { background: var(--amber); }
+  .sb-dot.wip     { background: var(--purple); }
+  .sb-dot.offline { background: var(--text3); }
+
+  .sb-tagline {
+    margin-left: auto;
+    font-family: var(--lb);
+    font-style: italic;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+  }
+
+  .sync-status {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); }
+  .sync-dot.synced { background: var(--green); }
+  .sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--red); }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-top: 28px;
+    animation: fadeDown 0.6s 0.15s ease both;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 12px 22px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    position: relative;
+    bottom: -1px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tab-btn:hover { color: var(--text2); }
+  .tab-btn.active { color: var(--rose); border-bottom-color: var(--rose); }
+
+  /* ── TAB PANELS ── */
+  .panel { display: none; padding-top: 28px; animation: fadeUp 0.3s ease both; }
+  .panel.active { display: block; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: var(--bb);
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── TOOL GRID ── */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .tool-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s, background 0.2s;
+  }
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--rose));
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .tool-card:hover {
+    border-color: var(--card-accent, var(--rose));
+    background: var(--bg3);
+    transform: translateY(-2px);
+  }
+  .tool-card:hover::before { opacity: 1; }
+  .tool-card.no-url { cursor: default; }
+  .tool-card.no-url:hover { transform: none; }
+
+  .tc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .tc-icon { font-size: 20px; line-height: 1; }
+  .tc-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .tc-status-dot.s-live    { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .tc-status-dot.s-staging { background: var(--amber); }
+  .tc-status-dot.s-wip     { background: var(--purple); }
+  .tc-status-dot.s-offline { background: var(--text3); }
+
+  .tc-name {
+    font-family: var(--bb);
+    font-size: 18px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 5px;
+  }
+  .tc-desc {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    min-height: 30px;
+  }
+  .tc-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .tc-ver {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--silver-d);
+    background: rgba(154,160,180,0.07);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .tc-tier {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .tier-core  { background: rgba(192,81,106,0.12); color: var(--rose); }
+  .tier-rev   { background: rgba(201,168,76,0.12); color: var(--gold); }
+  .tier-grow  { background: rgba(155,127,232,0.12); color: var(--purple); }
+  .tier-other { background: rgba(154,160,180,0.08); color: var(--text3); }
+
+  /* ── NOTES ── */
+  .notes-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+  @media (max-width: 800px) { .notes-layout { grid-template-columns: 1fr; } }
+
+  .notes-compose {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .note-meta-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .note-tag-input, .note-sel {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .note-tag-input:focus, .note-sel:focus { border-color: var(--rose); }
+  .note-tag-input { flex: 1; min-width: 120px; }
+
+  .note-textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    resize: vertical;
+    min-height: 140px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .note-textarea:focus { border-color: var(--rose); }
+  .note-textarea::placeholder { color: var(--text3); }
+
+  .notes-list { display: flex; flex-direction: column; gap: 10px; }
+  .note-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .note-card:hover { border-color: var(--border2); }
+  .note-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .note-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: var(--pur-bg);
+    color: var(--purple);
+  }
+  .note-ts {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+  }
+  .note-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .note-del {
+    position: absolute;
+    top: 10px; right: 12px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.2s;
+    padding: 2px 4px;
+  }
+  .note-del:hover { color: var(--red); }
+
+  /* ── MANAGE ── */
+  .manage-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 800px) { .manage-layout { grid-template-columns: 1fr; } }
+
+  .form-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .form-row { margin-bottom: 12px; }
+  .form-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    display: block;
+    margin-bottom: 5px;
+  }
+  .form-input, .form-sel {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-sel:focus { border-color: var(--rose); }
+  .form-row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .manage-list { display: flex; flex-direction: column; gap: 8px; }
+  .manage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: border-color 0.2s;
+  }
+  .manage-item:hover { border-color: var(--border2); }
+  .mi-icon { font-size: 16px; flex-shrink: 0; }
+  .mi-info { flex: 1; min-width: 0; }
+  .mi-name {
+    font-family: var(--bb);
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mi-ver {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .mi-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* ── SETUP PANEL ── */
+  .setup-card {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 28px 32px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .setup-step {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .setup-step:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .step-num {
+    font-family: var(--bb);
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--rose);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 40px;
+  }
+  .step-body { flex: 1; }
+  .step-title {
+    font-family: var(--bb);
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .step-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+  .step-link {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--rose);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--rose-dim);
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .step-link:hover { color: var(--rose-hi); border-color: var(--rose-hi); }
+
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--silver);
+    letter-spacing: 0.5px;
+    margin: 10px 0;
+    word-break: break-all;
+    line-height: 1.6;
+  }
+
+  .connected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--green);
+    color: var(--green);
+    margin-top: 10px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary {
+    background: var(--rose);
+    border-color: var(--rose);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--rose-hi); border-color: var(--rose-hi); }
+  .btn-outline {
+    background: transparent;
+    border-color: var(--border2);
+    color: var(--text2);
+  }
+  .btn-outline:hover { border-color: var(--rose); color: var(--rose); }
+  .btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--text3);
+    padding: 6px 10px;
+  }
+  .btn-ghost:hover { color: var(--rose); }
+  .btn-danger {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text3);
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+  .btn-danger:hover { border-color: var(--red); color: var(--red); }
+  .btn-sm { padding: 5px 12px; font-size: 10px; }
+
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+
+  /* ── TOKEN FIELD ── */
+  .token-field-wrap { position: relative; }
+  .token-field {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 44px 8px 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 1px;
+  }
+  .token-field:focus { border-color: var(--rose); }
+  .token-toggle {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--text3); cursor: pointer; font-size: 13px;
+    transition: color 0.2s;
+  }
+  .token-toggle:hover { color: var(--text); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    max-width: 320px;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.ok  { border-color: var(--green); color: var(--green); }
+  #toast.err { border-color: var(--red);   color: var(--red);   }
+  #toast.info{ border-color: var(--blue);  color: var(--blue);  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+    padding: 24px 0;
+    text-align: center;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 2px; }
+
+  /* ── GIST INFO BOX ── */
+  .info-box {
+    background: var(--pur-bg);
+    border: 1px solid rgba(155,127,232,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.7;
+    margin: 10px 0;
+  }
+  .info-box strong { color: var(--purple); font-weight: 500; }
+
+  /* ── CONNECTED GIST INFO ── */
+  .gist-info {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.7;
+    margin: 12px 0;
+  }
+  .gist-info a { color: var(--rose); text-decoration: none; }
+  .gist-info a:hover { color: var(--rose-hi); }
+
+  select option { background: #17171f; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div>
+      <div class="logo-line">GROUND <em>CONTROL</em><span class="slash">//</span>SACRED CHAOS</div>
+      <div class="logo-sub">funkyblackpoppy-art &nbsp;·&nbsp; rachael nike &nbsp;·&nbsp; 11:11</div>
+    </div>
+    <div class="header-right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="dateline" id="dateline">loading...</div>
+    </div>
+  </header>
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <div class="sb-item"><div class="sb-dot live"></div><span id="cnt-live">0</span>&nbsp;live</div>
+    <div class="sb-item"><div class="sb-dot staging"></div><span id="cnt-staging">0</span>&nbsp;staging</div>
+    <div class="sb-item"><div class="sb-dot wip"></div><span id="cnt-wip">0</span>&nbsp;wip</div>
+    <div class="sb-item"><div class="sb-dot offline"></div><span id="cnt-offline">0</span>&nbsp;offline</div>
+    <div class="sync-status" id="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label" style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase">not connected</span>
+    </div>
+    <div class="sb-tagline">noli illegitimi carborundum</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('tools', this)">Tools</button>
+    <button class="tab-btn" onclick="showTab('notes', this)">Notes</button>
+    <button class="tab-btn" onclick="showTab('manage', this)">Manage</button>
+    <button class="tab-btn" onclick="showTab('setup', this)">GitHub Setup</button>
+  </div>
+
+  <!-- PANEL: TOOLS -->
+  <div class="panel active" id="panel-tools">
+    <div id="tools-render"></div>
+  </div>
+
+  <!-- PANEL: NOTES -->
+  <div class="panel" id="panel-notes">
+    <div class="notes-layout">
+      <div>
+        <div class="section-label">New Note</div>
+        <div class="notes-compose">
+          <div class="note-meta-row">
+            <input class="note-tag-input" id="note-tag" placeholder="Tag (e.g. FBP, Turtle Oracle, General)" />
+            <select class="note-sel" id="note-priority">
+              <option value="note">Note</option>
+              <option value="action">Action Item</option>
+              <option value="version">Version Log</option>
+              <option value="session">Session Start</option>
+            </select>
+          </div>
+          <textarea class="note-textarea" id="note-body" placeholder="What are you working on? Drop context, version notes, URLs, decisions...&#10;&#10;Shift+Enter to save."></textarea>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+            <button class="btn btn-outline" onclick="syncToGist()">Sync to GitHub</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">Saved Notes</div>
+        <div class="notes-list" id="notes-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: MANAGE -->
+  <div class="panel" id="panel-manage">
+    <div class="manage-layout">
+      <div>
+        <div class="section-label" id="form-section-label">Add Tool</div>
+        <div class="form-card">
+          <input type="hidden" id="edit-id" />
+          <div class="form-row">
+            <label class="form-label">Tool Name</label>
+            <input class="form-input" id="f-name" placeholder="Turtle Oracle" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">URL (leave blank if not deployed)</label>
+            <input class="form-input" id="f-url" placeholder="https://your-app.netlify.app" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Description</label>
+            <input class="form-input" id="f-desc" placeholder="What this tool does" />
+          </div>
+          <div class="form-row-split">
+            <div class="form-row" style="margin-bottom:0">
+              <label class="form-label">Version / Stage</label>
+              <input class="form-input" id="f-ver" placeholder="v1.0 PROD" />
+            </div>
+            <div class="form-row" style="margin-bottom:0">
+              <label class="form-label">Icon (emoji)</label>
+              <input class="form-input" id="f-icon" placeholder="🔮" style="max-width:100px" />
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:12px">
+            <label class="form-label">Status</label>
+            <select class="form-sel" id="f-status">
+              <option value="s-live">Live / Production</option>
+              <option value="s-staging">Staging / Beta</option>
+              <option value="s-wip">Work In Progress</option>
+              <option value="s-offline">Offline / Paused</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Brand Tier</label>
+            <select class="form-sel" id="f-tier">
+              <option value="tier-core">Core</option>
+              <option value="tier-rev">Revenue</option>
+              <option value="tier-grow">Growth</option>
+              <option value="tier-other">Other</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Notes / Changelog</label>
+            <input class="form-input" id="f-notes" placeholder="Last updated, what changed, known issues..." />
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveTool()">Save Tool</button>
+            <button class="btn btn-outline" onclick="clearForm()">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">All Tools</div>
+        <div class="manage-list" id="manage-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: SETUP -->
+  <div class="panel" id="panel-setup">
+    <div class="setup-card">
+      <div class="section-label" style="margin-bottom:24px">GitHub Setup — One Time Only</div>
+
+      <div class="setup-step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <div class="step-title">Create a Free GitHub Account</div>
+          <div class="step-desc">If you don't have one yet, go to GitHub and sign up. It's free. Your username can be <strong>funkyblackpoppy-art</strong> or whatever feels right.<br><br>Already have an account? Skip to step 2.</div>
+          <a class="step-link" href="https://github.com/signup" target="_blank">→ github.com/signup</a>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <div class="step-title">Create a Personal Access Token</div>
+          <div class="step-desc">This is like a password that lets Ground Control save your data to GitHub. You only do this once.</div>
+          <div class="code-block">
+            1. Go to: github.com → click your avatar → Settings<br>
+            2. Scroll down to "Developer settings" (bottom left)<br>
+            3. Click "Personal access tokens" → "Tokens (classic)"<br>
+            4. Click "Generate new token (classic)"<br>
+            5. Name it: Ground Control<br>
+            6. Set expiration: No expiration (or 1 year)<br>
+            7. Check the box: ✓ gist<br>
+            8. Click "Generate token"<br>
+            9. COPY the token immediately — you won't see it again
+          </div>
+          <a class="step-link" href="https://github.com/settings/tokens/new" target="_blank">→ Create token now</a>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <div class="step-title">Paste Your Token Here</div>
+          <div class="step-desc">Your token is stored only in your browser on this device. It is never sent anywhere except directly to GitHub's API.</div>
+          <div class="token-field-wrap" style="margin:10px 0">
+            <input class="token-field" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+            <button class="token-toggle" onclick="toggleToken()">👁</button>
+          </div>
+          <div class="info-box">
+            <strong>Privacy note:</strong> Your token lives in your browser's localStorage under the key <code>gc_github_token</code>. It never touches any server except GitHub. If you clear your browser data, you'll need to paste it again.
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="connectGitHub()">Connect to GitHub</button>
+            <button class="btn btn-outline btn-sm" onclick="disconnectGitHub()">Disconnect</button>
+          </div>
+          <div id="connected-state" style="display:none">
+            <div class="connected-badge"><span>●</span> Connected</div>
+            <div class="gist-info" id="gist-info-box"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <div class="step-title">Host This File Free on GitHub Pages</div>
+          <div class="step-desc">To access Ground Control from any device at a permanent URL:</div>
+          <div class="code-block">
+            1. Go to github.com → click "+" → "New repository"<br>
+            2. Name it: sacred-chaos-mission-control<br>
+            3. Set to Public (required for free Pages hosting)<br>
+            4. Click "Create repository"<br>
+            5. Upload this HTML file — rename it to: index.html<br>
+            6. Go to Settings → Pages → Source: Deploy from branch → main<br>
+            7. Your URL will be: yourusername.github.io/sacred-chaos-mission-control
+          </div>
+          <div class="step-desc" style="margin-top:8px">Or deploy to Netlify by dragging this file to <a class="step-link" href="https://app.netlify.com/drop" target="_blank">app.netlify.com/drop</a> — instant free URL, no account needed.</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <div class="step-title">Backup & Restore</div>
+          <div class="step-desc">Export all your tools and notes as a JSON file at any time. Re-import to restore or move to a new device.</div>
+          <div class="btn-row">
+            <button class="btn btn-outline" onclick="exportData()">Export JSON Backup</button>
+            <label class="btn btn-outline" style="cursor:pointer">
+              Import JSON
+              <input type="file" accept=".json" onchange="importData(event)" style="display:none" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────
+const K_TOKEN  = 'gc_github_token';
+const K_GIST   = 'gc_gist_id';
+const K_TOOLS  = 'gc_tools_v1';
+const K_NOTES  = 'gc_notes_v1';
+const API      = 'https://api.github.com';
+
+// ─── DEFAULT TOOLS ───────────────────────────────────────────
+const DEFAULT_TOOLS = [
+  {id:'t1', name:'Turtle Oracle',     url:'',  desc:'Soul readings & oracle dashboard',       ver:'v1.0 PROD',    icon:'🐢', status:'s-live',    tier:'tier-core',  notes:''},
+  {id:'t2', name:'Gray Witch',        url:'',  desc:'GrayWitch web app',                      ver:'v1.0 PROD',    icon:'🌫️', status:'s-live',    tier:'tier-core',  notes:''},
+  {id:'t3', name:'FBP SEO Generator', url:'',  desc:'Replit-hosted React SEO title gen',      ver:'near-deploy',  icon:'🏷️', status:'s-staging', tier:'tier-rev',   notes:'Check Replit deployment'},
+  {id:'t4', name:'Soul Paws',         url:'',  desc:'Animal soul chart readings — apothecary',ver:'near-launch',  icon:'🐾', status:'s-wip',     tier:'tier-grow',  notes:'Tally-to-Sheets integration unconfirmed'},
+  {id:'t5', name:'Black Poppy Continuum', url:'https://substack.com/@blackpoppycontinuum', desc:'Substack — The Poppy Chamber', ver:'LIVE', icon:'🌺', status:'s-live', tier:'tier-core', notes:'6 free sections + paid tier'},
+  {id:'t6', name:'GhostQueue Media',  url:'',  desc:'Freelance creative ops',                 ver:'v1.0',         icon:'👻', status:'s-live',    tier:'tier-rev',   notes:''},
+  {id:'t7', name:'Top Dog Drones',    url:'',  desc:'Drone biz — Craig + Rachael',            ver:'v1.0',         icon:'🚁', status:'s-live',    tier:'tier-rev',   notes:'Craig: equipment operator'},
+  {id:'t8', name:'Funky Black Poppy', url:'https://etsy.com',  desc:'FBP reselling — Etsy / Shopify / Depop / Poshmark', ver:'LIVE', icon:'🖤', status:'s-live', tier:'tier-core', notes:'Second-Hand Rebellion campaign'},
+  {id:'t9', name:'StarPaws Workbook', url:'https://docs.google.com', desc:'6-tab Google Sheets master (StarPaws_Master)', ver:'LIVE', icon:'⭐', status:'s-live', tier:'tier-grow', notes:'Orders, Clients, Animals, Dashboard, Pricing, Tally Setup'},
+  {id:'t10',name:'Cursey Queen',      url:'',  desc:'The Poppy Hour — 7:30PM Eastern',        ver:'launching',    icon:'👑', status:'s-wip',     tier:'tier-grow',  notes:'Day 1 script: "Who TF Is The Cursey Queen?"'},
+  {id:'t11',name:'Black Poppy Magik', url:'https://etsy.com/shop/blackpoppymagik', desc:'Etsy apothecary — Blood & Bloom lives here', ver:'LIVE', icon:'🌙', status:'s-live', tier:'tier-core', notes:'Blood & Bloom = soul, BPM = storefront'},
+  {id:'t12',name:'GothDamnBatz',      url:'',  desc:'Growth brand',                           ver:'developing',   icon:'🦇', status:'s-wip',     tier:'tier-grow',  notes:''},
+  {id:'t13',name:'PunkRock Voodoo Dollz', url:'', desc:'Growth brand',                        ver:'developing',   icon:'🪆', status:'s-wip',     tier:'tier-grow',  notes:''},
+  {id:'t14',name:'Black Poppy Garden', url:'', desc:'Growth brand',                           ver:'developing',   icon:'🌸', status:'s-wip',     tier:'tier-grow',  notes:''},
+];
+
+// ─── STATE ───────────────────────────────────────────────────
+let tools = [];
+let notes = [];
+let editingId = null;
+
+// ─── INIT ────────────────────────────────────────────────────
+function init() {
+  loadLocal();
+  renderClock();
+  setInterval(renderClock, 1000);
+  renderTools();
+  renderNotes();
+  renderManageList();
+  checkConnectionState();
+}
+
+function loadLocal() {
+  try { tools = JSON.parse(localStorage.getItem(K_TOOLS)) || DEFAULT_TOOLS; } catch { tools = DEFAULT_TOOLS; }
+  try { notes = JSON.parse(localStorage.getItem(K_NOTES)) || []; } catch { notes = []; }
+}
+
+function saveLocal() {
+  try { localStorage.setItem(K_TOOLS, JSON.stringify(tools)); } catch {}
+  try { localStorage.setItem(K_NOTES, JSON.stringify(notes)); } catch {}
+}
+
+// ─── CLOCK ───────────────────────────────────────────────────
+function renderClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false});
+  document.getElementById('dateline').textContent = now.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}).toUpperCase();
+}
+
+// ─── TABS ────────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    const all = document.querySelectorAll('.tab-btn');
+    const map = ['tools','notes','manage','setup'];
+    const idx = map.indexOf(name);
+    if (idx >= 0 && all[idx]) all[idx].classList.add('active');
+  }
+  if (name === 'manage') renderManageList();
+  if (name === 'notes')  renderNotes();
+}
+
+// ─── TOOLS RENDER ────────────────────────────────────────────
+function accentFor(tier) {
+  if (tier === 'tier-core')  return '#c0516a';
+  if (tier === 'tier-rev')   return '#c9a84c';
+  if (tier === 'tier-grow')  return '#9b7fe8';
+  return '#555c70';
+}
+
+function renderTools() {
+  const groups = [
+    { label: 'Core Brands',  tier: 'tier-core' },
+    { label: 'Revenue',      tier: 'tier-rev'  },
+    { label: 'Growth',       tier: 'tier-grow' },
+    { label: 'Other',        tier: 'tier-other'},
+  ];
+  let html = '';
+  groups.forEach(g => {
+    const gt = tools.filter(t => t.tier === g.tier);
+    if (!gt.length) return;
+    html += `<div class="section-label">${g.label}</div><div class="tool-grid">`;
+    gt.forEach(t => {
+      const accent = accentFor(t.tier);
+      const hasUrl = t.url && t.url.trim().length > 0;
+      const href   = hasUrl ? `href="${t.url}" target="_blank"` : '';
+      const cls    = hasUrl ? '' : ' no-url';
+      html += `<a class="tool-card${cls}" ${href} style="--card-accent:${accent}">
+        <div class="tc-top">
+          <span class="tc-icon">${t.icon || '🔧'}</span>
+          <span class="tc-status-dot ${t.status}"></span>
+        </div>
+        <div class="tc-name">${t.name}</div>
+        <div class="tc-desc">${t.desc}${t.notes ? '<br><span style="color:var(--text3)">↳ ' + t.notes + '</span>' : ''}</div>
+        <div class="tc-footer">
+          <span class="tc-ver">${t.ver}</span>
+          <span class="tc-tier ${t.tier}">${t.tier.replace('tier-','')}</span>
+        </div>
+      </a>`;
+    });
+    html += `</div><div style="height:8px"></div>`;
+  });
+  document.getElementById('tools-render').innerHTML = html;
+  updateStatusBar();
+}
+
+function updateStatusBar() {
+  document.getElementById('cnt-live').textContent    = tools.filter(t => t.status === 's-live').length;
+  document.getElementById('cnt-staging').textContent = tools.filter(t => t.status === 's-staging').length;
+  document.getElementById('cnt-wip').textContent     = tools.filter(t => t.status === 's-wip').length;
+  document.getElementById('cnt-offline').textContent = tools.filter(t => t.status === 's-offline').length;
+}
+
+// ─── MANAGE ──────────────────────────────────────────────────
+function renderManageList() {
+  const el = document.getElementById('manage-list');
+  if (!tools.length) { el.innerHTML = '<div class="empty">No tools yet.</div>'; return; }
+  el.innerHTML = tools.map((t, i) => `
+    <div class="manage-item">
+      <span class="mi-icon">${t.icon || '🔧'}</span>
+      <div class="mi-info">
+        <div class="mi-name">${t.name}</div>
+        <div class="mi-ver">${t.ver} &nbsp;·&nbsp; ${t.tier.replace('tier-','')}</div>
+      </div>
+      <div class="tc-status-dot ${t.status}" style="flex-shrink:0"></div>
+      <div class="mi-actions">
+        <button class="btn btn-ghost btn-sm" onclick="loadEdit('${t.id}')">Edit</button>
+        <button class="btn btn-danger" onclick="deleteTool('${t.id}')">Del</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadEdit(id) {
+  const t = tools.find(x => x.id === id);
+  if (!t) return;
+  editingId = id;
+  document.getElementById('f-name').value   = t.name;
+  document.getElementById('f-url').value    = t.url || '';
+  document.getElementById('f-desc').value   = t.desc;
+  document.getElementById('f-ver').value    = t.ver;
+  document.getElementById('f-icon').value   = t.icon || '';
+  document.getElementById('f-status').value = t.status;
+  document.getElementById('f-tier').value   = t.tier;
+  document.getElementById('f-notes').value  = t.notes || '';
+  document.getElementById('form-section-label').textContent = 'Edit Tool';
+  showTab('manage', null);
+}
+
+function saveTool() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('Tool name is required', 'err'); return; }
+  const t = {
+    id:     editingId || 't' + Date.now(),
+    name,
+    url:    document.getElementById('f-url').value.trim(),
+    desc:   document.getElementById('f-desc').value.trim(),
+    ver:    document.getElementById('f-ver').value.trim() || 'v1.0',
+    icon:   document.getElementById('f-icon').value.trim() || '🔧',
+    status: document.getElementById('f-status').value,
+    tier:   document.getElementById('f-tier').value,
+    notes:  document.getElementById('f-notes').value.trim(),
+  };
+  if (editingId) {
+    const idx = tools.findIndex(x => x.id === editingId);
+    if (idx >= 0) tools[idx] = t;
+  } else {
+    tools.push(t);
+  }
+  saveLocal();
+  renderTools();
+  renderManageList();
+  clearForm();
+  toast(editingId ? 'Tool updated' : 'Tool added', 'ok');
+  editingId = null;
+  document.getElementById('form-section-label').textContent = 'Add Tool';
+}
+
+function deleteTool(id) {
+  const t = tools.find(x => x.id === id);
+  if (!t) return;
+  if (!confirm('Remove "' + t.name + '"?')) return;
+  tools = tools.filter(x => x.id !== id);
+  saveLocal();
+  renderTools();
+  renderManageList();
+  toast('Tool removed', 'info');
+}
+
+function clearForm() {
+  editingId = null;
+  ['f-name','f-url','f-desc','f-ver','f-icon','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-status').value = 's-live';
+  document.getElementById('f-tier').value   = 'tier-core';
+  document.getElementById('form-section-label').textContent = 'Add Tool';
+}
+
+// ─── NOTES ───────────────────────────────────────────────────
+function saveNote() {
+  const body = document.getElementById('note-body').value.trim();
+  if (!body) { toast('Write something first', 'err'); return; }
+  const n = {
+    id:       'n' + Date.now(),
+    ts:       new Date().toLocaleString('en-US', {weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}),
+    tag:      document.getElementById('note-tag').value.trim() || 'General',
+    priority: document.getElementById('note-priority').value,
+    body,
+  };
+  notes.unshift(n);
+  saveLocal();
+  renderNotes();
+  document.getElementById('note-body').value = '';
+  document.getElementById('note-tag').value  = '';
+  toast('Note saved', 'ok');
+}
+
+function deleteNote(id) {
+  notes = notes.filter(n => n.id !== id);
+  saveLocal();
+  renderNotes();
+}
+
+function renderNotes() {
+  const el = document.getElementById('notes-list');
+  if (!notes.length) { el.innerHTML = '<div class="empty">No notes yet. Drop some context.</div>'; return; }
+  const prColors = { note:'var(--purple)', action:'var(--rose)', version:'var(--gold)', session:'var(--green)' };
+  el.innerHTML = notes.map(n => `
+    <div class="note-card">
+      <div class="note-card-top">
+        <span class="note-tag" style="background:rgba(155,127,232,0.1);color:${prColors[n.priority]||'var(--purple)'}">${n.priority}</span>
+        <span class="note-tag" style="background:rgba(154,160,180,0.07);color:var(--silver-d)">${n.tag}</span>
+        <span class="note-ts">${n.ts}</span>
+      </div>
+      <div class="note-text">${escHtml(n.body)}</div>
+      <button class="note-del" onclick="deleteNote('${n.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// keyboard shortcut: shift+enter saves note
+document.addEventListener('keydown', e => {
+  if (e.shiftKey && e.key === 'Enter' && document.activeElement.id === 'note-body') {
+    e.preventDefault();
+    saveNote();
+  }
+});
+
+// ─── GITHUB GIST ─────────────────────────────────────────────
+function getToken()  { return localStorage.getItem(K_TOKEN) || ''; }
+function getGistId() { return localStorage.getItem(K_GIST)  || ''; }
+
+function checkConnectionState() {
+  const token  = getToken();
+  const gistId = getGistId();
+  const dot    = document.getElementById('sync-dot');
+  const label  = document.getElementById('sync-label');
+  const state  = document.getElementById('connected-state');
+  const inp    = document.getElementById('gh-token');
+
+  if (token && gistId) {
+    dot.className   = 'sync-dot synced';
+    label.textContent = 'github synced';
+    label.style.color = 'var(--green)';
+    state.style.display = 'block';
+    document.getElementById('gist-info-box').innerHTML =
+      `Gist ID: <code>${gistId}</code><br>
+       <a href="https://gist.github.com/${gistId}" target="_blank">View on GitHub →</a><br>
+       Token: saved in browser localStorage`;
+    if (inp) inp.value = token;
+  } else if (token) {
+    dot.className   = 'sync-dot';
+    label.textContent = 'token set — no gist yet';
+    label.style.color = 'var(--amber)';
+  } else {
+    dot.className   = 'sync-dot';
+    label.textContent = 'not connected';
+    label.style.color = 'var(--text3)';
+    state.style.display = 'none';
+  }
+}
+
+async function connectGitHub() {
+  const token = document.getElementById('gh-token').value.trim();
+  if (!token) { toast('Paste your GitHub token first', 'err'); return; }
+  localStorage.setItem(K_TOKEN, token);
+
+  setSyncState('syncing', 'connecting...');
+  toast('Connecting to GitHub...', 'info');
+
+  try {
+    // verify token
+    const me = await ghFetch('GET', '/user', null, token);
+    if (!me.login) throw new Error('Invalid token');
+
+    let gistId = getGistId();
+    if (!gistId) {
+      // create the gist
+      const gist = await ghFetch('POST', '/gists', {
+        description: 'Sacred Chaos // Ground Control — Mission Data',
+        public: false,
+        files: {
+          'ground-control-data.json': {
+            content: JSON.stringify({ tools, notes, meta: { created: new Date().toISOString(), owner: 'Rachael Nike // Sacred Chaos' } }, null, 2)
+          }
+        }
+      }, token);
+      gistId = gist.id;
+      localStorage.setItem(K_GIST, gistId);
+    }
+
+    setSyncState('synced', 'github synced');
+    checkConnectionState();
+    toast('Connected as @' + me.login, 'ok');
+  } catch (err) {
+    setSyncState('error', 'connection error');
+    toast('Error: ' + err.message, 'err');
+  }
+}
+
+function disconnectGitHub() {
+  if (!confirm('Disconnect GitHub? Your local data stays intact.')) return;
+  localStorage.removeItem(K_TOKEN);
+  localStorage.removeItem(K_GIST);
+  checkConnectionState();
+  toast('Disconnected from GitHub', 'info');
+}
+
+async function syncToGist() {
+  const token  = getToken();
+  const gistId = getGistId();
+  if (!token || !gistId) {
+    toast('Set up GitHub first (⚙ GitHub Setup tab)', 'err');
+    return;
+  }
+  setSyncState('syncing', 'syncing...');
+  try {
+    await ghFetch('PATCH', '/gists/' + gistId, {
+      files: {
+        'ground-control-data.json': {
+          content: JSON.stringify({
+            tools,
+            notes,
+            meta: { updated: new Date().toISOString(), version: '1.0', owner: 'Rachael Nike // Sacred Chaos' }
+          }, null, 2)
+        }
+      }
+    }, token);
+    setSyncState('synced', 'synced ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'}));
+    toast('Synced to GitHub', 'ok');
+  } catch (err) {
+    setSyncState('error', 'sync error');
+    toast('Sync failed: ' + err.message, 'err');
+  }
+}
+
+async function loadFromGist() {
+  const token  = getToken();
+  const gistId = getGistId();
+  if (!token || !gistId) return;
+  setSyncState('syncing', 'loading...');
+  try {
+    const gist    = await ghFetch('GET', '/gists/' + gistId, null, token);
+    const content = gist.files['ground-control-data.json']?.content;
+    if (!content) return;
+    const data = JSON.parse(content);
+    if (data.tools) { tools = data.tools; localStorage.setItem(K_TOOLS, JSON.stringify(tools)); }
+    if (data.notes) { notes = data.notes; localStorage.setItem(K_NOTES, JSON.stringify(notes)); }
+    renderTools();
+    renderNotes();
+    renderManageList();
+    setSyncState('synced', 'loaded from github');
+    toast('Data loaded from GitHub', 'ok');
+  } catch (err) {
+    setSyncState('error', 'load error');
+    toast('Load failed: ' + err.message, 'err');
+  }
+}
+
+async function ghFetch(method, path, body, token) {
+  const res = await fetch(API + path, {
+    method,
+    headers: {
+      'Authorization': 'token ' + token,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || res.status);
+  }
+  return res.json();
+}
+
+function setSyncState(cls, label) {
+  const dot   = document.getElementById('sync-dot');
+  const lbl   = document.getElementById('sync-label');
+  dot.className  = 'sync-dot ' + (cls === 'synced' ? 'synced' : cls === 'syncing' ? 'syncing' : cls === 'error' ? 'error' : '');
+  lbl.textContent = label.toUpperCase();
+  lbl.style.color = cls === 'synced' ? 'var(--green)' : cls === 'syncing' ? 'var(--amber)' : cls === 'error' ? 'var(--red)' : 'var(--text3)';
+}
+
+// ─── TOKEN TOGGLE ────────────────────────────────────────────
+function toggleToken() {
+  const inp = document.getElementById('gh-token');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// ─── EXPORT / IMPORT ─────────────────────────────────────────
+function exportData() {
+  const data = { tools, notes, meta: { exported: new Date().toISOString(), version: '1.0' } };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'ground-control-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  toast('Backup exported', 'ok');
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.tools) { tools = data.tools; }
+      if (data.notes) { notes = data.notes; }
+      saveLocal();
+      renderTools();
+      renderNotes();
+      renderManageList();
+      toast('Data imported successfully', 'ok');
+    } catch {
+      toast('Import failed — invalid JSON', 'err');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ─── TOAST ───────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3200);
+}
+
+// ─── AUTO-SYNC ON LOAD ───────────────────────────────────────
+window.addEventListener('load', () => {
+  init();
+  if (getToken() && getGistId()) loadFromGist();
+});
+</script>
+</body>
+</html>
